@@ -325,11 +325,11 @@ get.input <- function(){
             is.trended <- ask.for.yes.no(
                 paste0("Has time series a trend?\n",
                        "y - yes\n",
-                       "n - no"))
+                       "n - no\n"))
             is.seasonal <- ask.for.yes.no(
                 paste0("Has time series a seasonal component?\n",
                        "y - yes\n",
-                       "n - no"))
+                       "n - no\n"))
             default.params <- ask.for.yes.no(
                 paste0("Use default parameters?\n",
                        "alpha - ", default.alpha, " (smooth parameter)\n",
@@ -340,7 +340,7 @@ get.input <- function(){
                               paste0("theta - ", default.theta, " (seasonal parameter)\n"),
                               ""),
                        "y - yes\n",
-                       "n - no"))
+                       "n - no\n"))
             if (!default.params) {
                 alpha <- get.model.param(
                                 prompt = paste0("Input alpha - smooth parameter\n",
