@@ -22,6 +22,7 @@ theil.wage <- function(ts, period, par1, par2, par3, trend=TRUE){
         b_prev <- b_nxt
         theta <- c(theta, theta_nxt)
     }
+    
     return(list(
         a = a_nxt,
         b = b_nxt,

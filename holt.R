@@ -30,4 +30,4 @@ holt <- function(ts, par1, par2, trend=TRUE){
 }
 
 
-holt.predict <- function(pars, horizon=1) pars$a + horizon*pars$b
+holt.predict <- function(holt.mod, horizon=1) holt.mod$a + horizon*holt.mod$b
