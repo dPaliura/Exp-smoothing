@@ -1,10 +1,11 @@
-theil.wage <- function(ts, period, par1, par2, par3){
+theil.wage <- function(ts, period, par1, par2, par3, trend=TRUE){
     n <- length(ts)
     s <- period
     
     regr <- lm(vals~indx, data=data.frame(vals=ts[1:period], indx=1:s))
     a_prev <- regr$coefficients[1]
-    b_prev <- regr$coefficients[2]
+    b_prev <- if (trend) regr$coefficients[2] else 0
+    if (!trend) par3 <- 0
     
     regr2 <- lm(vals~indx, data=data.frame(vals=ts[(s+1):(2*s)], indx=(s+1):(2*s)))
     theta <- ((ts[1:s]-predict(regr)) + (ts[(s+1):(2*s)]-predict(regr2)))/2
