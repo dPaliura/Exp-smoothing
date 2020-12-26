@@ -6,6 +6,8 @@ source("interpreter.R", echo = FALSE)
 start <- function(){
     repeat {
         inp <- get.input()
+        if (is.null(inp)) return()
+        
         res <- apply(inp)
         interpret(res)
         
