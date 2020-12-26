@@ -1,4 +1,4 @@
-holt <- function(ts, par1, par2){
+holt <- function(ts, par1, par2, trend=TRUE){
     n <- length(ts)
     if (n<5){
         stop(paste0("holt: number of observations in time series ",
@@ -7,7 +7,8 @@ holt <- function(ts, par1, par2){
     # Get approximate values for a_0 and b_0
     regr <- lm(vals~indx, data=data.frame(vals=ts[1:5], indx=1:5))
     a_prev <- regr$coefficients[1]
-    b_prev <- regr$coefficients[2]
+    b_prev <- if (trend) regr$coefficients[2] else 0
+    if (!trend) par2 <- 0 
     
     control <- NULL
     for (i in 1:n){

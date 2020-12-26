@@ -1,5 +1,6 @@
 source("validation.R", echo=FALSE)
 
+
 input.buffer.dir <- "inputBuff"
 
 
@@ -27,7 +28,9 @@ ask.for.yes.no <- function(prompt, yes="y", no="n", prompt.rep=FALSE){
 ask.for.abs.path <- function(){
     answer <- tolower(read.one.of.lines(c("y", "n", "x"), 
                                         paste0("Do you want to use absolute path?\n",
-                                              "y - yes\n", "n - no\n", "x - eXit\n"),
+                                              "y - yes\n",
+                                              "n - no, use inputBuff folder\n",
+                                              "x - eXit\n"),
                                         ignore.case = TRUE))
     if (answer == "y") return(TRUE)
     else if(answer == "n") return(FALSE)
@@ -250,11 +253,142 @@ get.time.series <- function(){
 }
 
 
+get.model.param <- function(prompt, prints=TRUE, back="b", exit="x"){
+    cat(prompt)
+    repeat {
+        answer <- readline()
+        low.answer <- tolower(answer)
+        if (low.answer == exit) return(NULL)
+        if (low.answer == back) return(NA)
+        
+        if (check.param(answer, prints = prints)) {
+            return (as.numeric(answer))
+        }
+    }
+}
+
+
+get.integer <- function(prompt, prints=TRUE, min.val=NULL, back="b", exit="x"){
+    cat(prompt)
+    repeat {
+        answer <- readline()
+        low.answer <- tolower(answer)
+        if (low.answer == exit) return(NULL)
+        if (low.answer == back) return(NA)
+        
+        if (check.integer(answer, prints = prints)) {
+            num <- as.numeric(answer)
+            if (is.null(min.val)){
+                return(num)
+            }
+            else{
+                if (num < min.val){
+                    if (prints) cat("Value must be not less than",
+                                    min.val,"\n")
+                }
+                else return(num)
+            }
+        }
+    }
+}
+
+
+get.season.period <- function(ts.size){
+    cat("Input season period",
+        "\n(b - back to conditions, x - eXit)\n")
+    repeat {
+        period <- get.integer("", min.val = 2)
+        if (period > ts.size/2){
+            cat("To large period. Data must contain at least 2 periods\n")
+        }
+        else return(period)
+    }
+}
+
+
 get.input <- function(){
+    default.alpha <- 0.5
+    default.beta  <- 0.5
+    default.theta <- 0.5
+    
     repeat {
         ts <- get.time.series()
         if (is.null(ts)) return(NULL)
-        else print(ts)
+        
+        n <- length(ts)
+        
+        repeat {
+            alpha <- default.alpha
+            beta <- default.beta
+            theta <- default.theta
+            
+            is.trended <- ask.for.yes.no(
+                paste0("Has time series a trend?\n",
+                       "y - yes\n",
+                       "n - no"))
+            is.seasonal <- ask.for.yes.no(
+                paste0("Has time series a seasonal component?\n",
+                       "y - yes\n",
+                       "n - no"))
+            default.params <- ask.for.yes.no(
+                paste0("Use default parameters?\n",
+                       "alpha - ", default.alpha, " (smooth parameter)\n",
+                       ifelse(is.trended, 
+                              paste0("beta - ", default.beta, " (trend parameter)\n"),
+                              ""),
+                       ifelse(is.seasonal,
+                              paste0("theta - ", default.theta, " (seasonal parameter)\n"),
+                              ""),
+                       "y - yes\n",
+                       "n - no"))
+            if (!default.params) {
+                alpha <- get.model.param(
+                                prompt = paste0("Input alpha - smooth parameter\n",
+                                                "(b - back to conditions, x - eXit)\n"))
+                if (is.null(alpha)) return(NULL)
+                if (!is.na(alpha)){
+                    if (is.trended){
+                        beta <- get.model.param(
+                                prompt = paste0("Input beta - trend parameter\n",
+                                                "(b - back to conditions, x - eXit)\n"))
+                        if (is.null(beta)) return(NULL)
+                        if (!is.na(beta)){
+                            if (is.seasonal){
+                                theta <- get.model.param(
+                                            prompt = paste0("Input theta - seasonal parameter\n",
+                                                            "(b - back to conditions, x - eXit)\n"))
+                                if (is.null(theta)) return(NULL)
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (all(!is.na(c(alpha, beta, theta)))){
+                season.period <- if (is.seasonal) get.season.period(n)
+                else 1
+                if (is.null(season.period)) return(NULL)
+                if (!is.na(season.period)){
+                    forecast.lenght <- get.integer(
+                                            prompt = paste0("Input size of forecast horizon\n",
+                                                            "(b - back to conditions, x - eXit)\n"),
+                                            prints = TRUE,
+                                            min.val = 1)
+                    if (is.null(forecast.lenght)) return(NULL)
+                    if (!is.na(forecast.lenght)){
+                        result <- list(
+                            ts = ts,
+                            is.trended = is.trended,
+                            is.seasonal = is.seasonal,
+                            alpha = alpha,
+                            beta = ifelse(is.trended, beta, NA),
+                            theta = ifelse(is.seasonal, theta, NA),
+                            season.period = ifelse(is.seasonal, season.period, NA),
+                            forecast.lenght = forecast.lenght)
+                        return(result)
+                    }
+                }
+            }
+        }
     }
-    
 }
