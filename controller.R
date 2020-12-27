@@ -6,10 +6,10 @@ source("interpreter.R", echo = FALSE)
 start <- function(){
     repeat {
         inp <- get.input()
-        if (is.null(inp)) return()
+        if (is.null(inp)) break()
         
-        res <- apply(inp)
-        interpret(res)
+        res <- apply.method(inp)
+        interpret(inp, res)
         
         if (!ask.for.yes.no(
                     prompt = paste0("Restart?\n",
