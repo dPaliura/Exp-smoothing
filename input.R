@@ -369,13 +369,13 @@ get.input <- function(){
                 else 1
                 if (is.null(season.period)) return(NULL)
                 if (!is.na(season.period)){
-                    forecast.lenght <- get.integer(
+                    forecast.length <- get.integer(
                                             prompt = paste0("Input size of forecast horizon\n",
                                                             "(b - back to conditions, x - eXit)\n"),
                                             prints = TRUE,
                                             min.val = 1)
-                    if (is.null(forecast.lenght)) return(NULL)
-                    if (!is.na(forecast.lenght)){
+                    if (is.null(forecast.length)) return(NULL)
+                    if (!is.na(forecast.length)){
                         result <- list(
                             ts = ts,
                             is.trended = is.trended,
@@ -384,7 +384,7 @@ get.input <- function(){
                             beta = ifelse(is.trended, beta, NA),
                             theta = ifelse(is.seasonal, theta, NA),
                             season.period = ifelse(is.seasonal, season.period, NA),
-                            forecast.lenght = forecast.lenght)
+                            forecast.length = forecast.length)
                         return(result)
                     }
                 }
