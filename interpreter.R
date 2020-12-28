@@ -43,17 +43,31 @@ interpret <- function(input, result){
                "See plot to view result visualisation",
                nl, nl))
     
+    ltype <- ifelse(ts.size>30, 'l', "b")
     
-    plot(y = c(input$ts, result$predict), 
-         x = 1:(ts.size + pred.size), 
-         type = "b", pch = 20,
-         col = c(rep(1, ts.size), rep(3, pred.size)),
+    ts.pred <- c(input$ts, result$predict)
+    
+    plot(NA, 
+         xlim=c(0, ts.size+pred.size), 
+         ylim=range(ts.pred),
          xlab = "index", ylab = "value",
          main = "Time series with predicted values")
     
+    lines(y = input$ts, 
+         x = 1:ts.size, 
+         type = ltype,
+         pch = 20,
+         col = 1)
+    
+    lines(y = result$predict,
+          x = (ts.size+1):(pred.size+ts.size),
+          type = ltype,
+          pch = 20,
+          col = 3)
+    
     lines(y = c(result$control, result$predict[1]),
           x = 1:(ts.size+1),
-          type = "b", pch = 20,
+          type = ltype, pch = 20,
           col = 2)
     
     legend.pos <- ifelse(result$b>0, "topleft", "topright")
