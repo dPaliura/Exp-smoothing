@@ -279,7 +279,7 @@ server <- function(input, output){
                 n <- nrow(df())
                 if (n > 4) sliderInput(
                     inputId = 'forecast_len',
-                    label = 'Series season period',
+                    label = 'Forecast size',
                     min = 1, max = n, value = floor(n/4),
                     step = 1
                 )
