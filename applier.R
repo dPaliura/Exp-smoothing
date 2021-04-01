@@ -21,6 +21,7 @@ apply.method <- function(input){
         res$method <- "Holt"
         res$predict <- holt.predict(res, 1:input$forecast.length)
     }
-    
+
+    res$input <- input
     return(res)
 }
