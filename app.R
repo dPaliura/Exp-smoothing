@@ -3,48 +3,56 @@ library(shiny)
 input.buffer.dir <- 'inputBuff'
 
 ui <- fluidPage(
-    # Getting path to file with data
-    checkboxInput(
-        inputId = 'use_abs_path',
-        label = 'Use absolute path to folder with file',
-        value = FALSE
-    ),
-    conditionalPanel(
-        condition = 'input.use_abs_path == true',
-        textInput(
-            inputId = 'abs_path',
-            label = 'Enter path to file',
-            value = '~/'
-        )
-    ),
-    uiOutput(
-        outputId = 'file_select'
-    ),
+    fluidRow(
+        # Getting path to file with data
+        column(
+            width = 4,
+            checkboxInput(
+                inputId = 'use_abs_path',
+                label = 'Use absolute path to folder with file',
+                value = FALSE
+            ),
+            conditionalPanel(
+                condition = 'input.use_abs_path == true',
+                textInput(
+                    inputId = 'abs_path',
+                    label = 'Enter path to file',
+                    value = '~/'
+                )
+            ),
+            uiOutput(
+                outputId = 'file_select'
+            ),
+        ),
 
-    # Setting parameters for file reading
-    checkboxInput(
-        inputId = 'use_def_sep_n_dec',
-        label = 'Use comma \',\' as separator and dot \'.\' as decimal',
-        value = TRUE
-    ),
-    conditionalPanel(
-        condition = 'input.use_def_sep_n_dec == false',
-        textInput(
-            inputId = 'separator',
-            label = 'Write your separator',
-            value = ';'
-        ),
-        textInput(
-            inputId = 'decimal',
-            label = 'Write your decimal',
-            value = ','
+        # Setting parameters for file reading
+        column(
+            width = 4,
+            checkboxInput(
+                inputId = 'use_def_sep_n_dec',
+                label = 'Use comma \',\' as separator and dot \'.\' as decimal',
+                value = TRUE
+            ),
+            conditionalPanel(
+                condition = 'input.use_def_sep_n_dec == false',
+                textInput(
+                    inputId = 'separator',
+                    label = 'Write your separator',
+                    value = ';'
+                ),
+                textInput(
+                    inputId = 'decimal',
+                    label = 'Write your decimal',
+                    value = ','
+                )
+            ),
+            span(
+                textOutput(
+                    outputId = 'sep_dec_err'
+                ),
+                style = 'color:red'
+            )
         )
-    ),
-    span(
-        textOutput(
-            outputId = 'sep_dec_err'
-        ),
-        style = 'color:red'
     ),
 
     # Button to read file
@@ -57,11 +65,17 @@ ui <- fluidPage(
         outputId = 'var_choose'
     ),
 
-    # Series preview
-    plotOutput(
-        outputId = 'preview'
+    # Model parameters
+    uiOutput(
+        outputId = 'model_params'
     ),
 
+    # Series preview
+    fluidRow(
+        plotOutput(
+            outputId = 'preview'
+        )
+    ),
 
     title = 'Exponential smoothing'
 )
@@ -178,7 +192,70 @@ server <- function(input, output){
         }
     )
 
+    output$model_params <- renderUI(
+        {
+            if (!is.null(input$var_choose) & !is.null(df())){
+                div(
+                    column(
+                        width = 6,
+                        sliderInput(
+                            inputId = 'alpha',
+                            label = 'Model smooth parameter (alpha)',
+                            min = 0, max = 1, value = 0.5,
+                            step = 1e-2
+                        ),
 
+                        checkboxInput(
+                            inputId = 'has_trend',
+                            label = 'Series has a trend',
+                            value = TRUE
+                        ),
+                        conditionalPanel(
+                            condition = 'input.has_trend == true',
+                            sliderInput(
+                                inputId = 'beta',
+                                label = 'Model trend parameter (beta)',
+                                min = 0, max = 1, value = 0.5,
+                                step = 1e-2
+                            )
+                        )
+                    ),
+                    column(
+                        width = 6,
+                        checkboxInput(
+                            inputId = 'has_season',
+                            label = 'Series is seasonal',
+                            value = FALSE
+                        ),
+                        conditionalPanel(
+                            condition = 'input.has_season == true',
+                            sliderInput(
+                                inputId = 'theta',
+                                label = 'Model seasonal parameter (theta)',
+                                min = 0, max = 1, value = 0.5,
+                                step = 1e-2
+                            ),
+                            uiOutput(
+                                outputId = 'season_period',
+                            )
+                        )
+                    )
+                )
+            }
+        }
+    )
+
+    output$season_period <- renderUI(
+        {
+            n <- nrow(df())
+            if (n > 4) sliderInput(
+                inputId = 'season_period',
+                label = 'Series season period',
+                min = 1, max = floor(n/2), value = floor(n/4),
+                step = 1
+            )
+        }
+    )
 }
 
 
