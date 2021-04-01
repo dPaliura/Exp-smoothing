@@ -1,5 +1,8 @@
 library(shiny)
 
+source('applier.R', echo = FALSE)
+source('interpreter.R', echo = FALSE)
+
 input.buffer.dir <- 'inputBuff'
 
 ui <- fluidPage(
@@ -75,6 +78,16 @@ ui <- fluidPage(
         plotOutput(
             outputId = 'preview'
         )
+    ),
+
+    # Build forecast button
+    uiOutput(
+        outputId = 'build_forecast'
+    ),
+
+    # Forecast plot
+    plotOutput(
+        outputId = 'forecast'
     ),
 
     title = 'Exponential smoothing'
@@ -239,6 +252,9 @@ server <- function(input, output){
                                 outputId = 'season_period',
                             )
                         )
+                    ),
+                    uiOutput(
+                        outputId = 'forecast_len',
                     )
                 )
             }
@@ -254,6 +270,55 @@ server <- function(input, output){
                 min = 1, max = floor(n/2), value = floor(n/4),
                 step = 1
             )
+        }
+    )
+
+    output$forecast_len <- renderUI(
+        {
+            if(!is.null(input$var_choose) & !is.null(df())){
+                n <- nrow(df())
+                if (n > 4) sliderInput(
+                    inputId = 'forecast_len',
+                    label = 'Series season period',
+                    min = 1, max = n, value = floor(n/4),
+                    step = 1
+                )
+            }
+        }
+    )
+
+    output$build_forecast <- renderUI(
+        {
+            if (!is.null(input$var_choose) & !is.null(df()))
+            actionButton(
+                inputId = 'build_forecast',
+                label = 'Build forecast'
+            )
+        }
+    )
+
+    forecast <- eventReactive(
+        eventExpr = {input$build_forecast},
+        valueExpr = {
+            ts <- df()[,input$var_choose]
+            print(ts)
+            input <- list(
+                ts = ts,
+                is.trended = input$has_trend,
+                is.seasonal = input$has_season,
+                alpha = input$alpha,
+                beta = ifelse(input$has_trend, input$beta, NA),
+                theta = ifelse(input$has_season, input$theta, NA),
+                season.period = ifelse(input$has_season,input$season_period,NA),
+                forecast.length = input$forecast_len
+            )
+            apply.method(input)
+        }
+    )
+
+    output$forecast <- renderPlot(
+        {
+            interpret(forecast())
         }
     )
 }
