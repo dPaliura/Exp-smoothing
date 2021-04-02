@@ -68,9 +68,9 @@ main <- function(){
     path <- sub('main.R', '', run$path)
     setwd(path)
 
-    source("controller.R", echo = FALSE)
+    source("app.R", echo = FALSE)
 
-    start()
+    shinyApp(server = server, ui = ui)
 
 }
 
