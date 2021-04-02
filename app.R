@@ -301,7 +301,6 @@ server <- function(input, output){
         eventExpr = {input$build_forecast},
         valueExpr = {
             ts <- df()[,input$var_choose]
-            print(ts)
             input <- list(
                 ts = ts,
                 is.trended = input$has_trend,

@@ -7,11 +7,15 @@ interpret <- function(result){
 
     ts.pred <- c(input$ts, result$predict)
 
+    sde <- sd(abs(input$ts-result$control))
+
     plot(NA,
          xlim=c(0, ts.size+pred.size),
          ylim=range(ts.pred),
          xlab = "index", ylab = "value",
-         main = paste0("Time series with predicted values (",result$method,")"))
+         main = paste0("Time series with forecasted values via method - ",
+                       result$method,
+                       "(SDE = ", sde,")"))
 
     lines(y = input$ts,
          x = 1:ts.size,
